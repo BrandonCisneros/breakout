@@ -13,5 +13,5 @@ colors := Colors {
   white       = {255,255,255,255},
   black       = {0,0,0,0},
   neonOrange  = {255,95,31,255},
-  royalBlue   = {65,105,225,1},
+  royalBlue   = {65,105,225,255},
 }
