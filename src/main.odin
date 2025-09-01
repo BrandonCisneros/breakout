@@ -18,7 +18,7 @@ paddle_pos_x: f32
 telemetryToggle: bool = true
 
 restart :: proc() {
-  
+  paddle_pos_x = (SCREEN_SIZE/2) - (PADDLE_WIDTH/2)
 }
 
 main :: proc() {
@@ -32,6 +32,8 @@ main :: proc() {
   rl.InitWindow(initScreenWidth,initScreenHeight,"Basic Odin Game")
   defer rl.CloseWindow()
   rl.SetTargetFPS(fps)
+
+  restart()
 
   //--- main loop
   for !rl.WindowShouldClose() {
