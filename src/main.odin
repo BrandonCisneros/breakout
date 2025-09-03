@@ -21,27 +21,27 @@ NUM_BLOCKS_X  :: 10
 NUM_BLOCK_Y   :: 8
 BLOCK_WIDTH   :: 28
 BLOCK_HEIGHT  :: 10
-BLOCK_COLOR_SCORE :: struct {
-  
-}
+
 
 //--- Global Mutables
-row_colors := [NUM_BLOCK_Y]rl.Color {
-  colors.colors.block_red,
-  colors.colors.block_red,
-  colors.colors.block_green,
-  colors.colors.block_green,
-  colors.colors.block_yellow,
-  colors.colors.block_yellow,
-  colors.colors.block_purple,
-  colors.colors.block_purple,
+row_colors := [NUM_BLOCK_Y]colors.BLOCK_COLORS {
+  .block_red,
+  .block_red,
+  .block_green,
+  .block_green,
+  .block_yellow,
+  .block_yellow,
+  .block_purple,
+  .block_purple,
 }
+
 
 blocks: [NUM_BLOCKS_X][NUM_BLOCK_Y]bool
 paddle_pos_x: f32
 ball_pos: rl.Vector2
 ball_dir: rl.Vector2
 started: bool
+score: int
 
 telemetryToggle: bool = true
 
@@ -49,6 +49,7 @@ restart :: proc() {
   paddle_pos_x = (SCREEN_SIZE/2) - (PADDLE_WIDTH/2)
   ball_pos = { (SCREEN_SIZE/2), BALL_START_Y }
   started = false
+  score = 0 
 
   for x in 0..<NUM_BLOCKS_X {
     for y in 0..<NUM_BLOCK_Y {
@@ -63,7 +64,6 @@ reflect :: proc(dir, normal: rl.Vector2) -> rl.Vector2 {
 }
 
 calc_block_rect :: proc(x,y: int) -> rl.Rectangle {
-
   return {
     f32(20 + x * BLOCK_WIDTH),
     f32(40 + y * BLOCK_HEIGHT),
@@ -81,14 +81,15 @@ block_exists :: proc(x,y: int) -> bool {
 }
 
 main :: proc() {
+
   //--- Initialization
   rl.SetConfigFlags({.VSYNC_HINT})
-  initScreenWidth: i32  = 1280
-  initScreenHeight: i32 = 1280
+  initScreenWidth: i32  = 1000
+  initScreenHeight: i32 = 1000
   fps: i32 = 500
 
 
-  rl.InitWindow(initScreenWidth,initScreenHeight,"Basic Odin Game")
+  rl.InitWindow(initScreenWidth,initScreenHeight,"BREAKOUT!")
   defer rl.CloseWindow()
   rl.SetTargetFPS(fps)
 
@@ -228,14 +229,17 @@ main :: proc() {
 
           //--- Destroy block
           blocks[x][y] = false
+          row_color := row_colors[y]
+          score += colors.block_score[row_color]
           break block_x_loop
+
         }
       }
     }
 
     //--- Drawing
     rl.BeginDrawing()
-      rl.ClearBackground(colors.colors.white)
+      rl.ClearBackground(colors.base_colors.white)
 
       camera := rl.Camera2D{
         zoom = f32(rl.GetScreenHeight()/SCREEN_SIZE)
@@ -245,8 +249,8 @@ main :: proc() {
 
      
 
-      rl.DrawRectangleRec(paddle_rect, colors.colors.neonOrange)
-      rl.DrawCircleV(ball_pos, BALL_RADIUS, colors.colors.royalBlue)
+      rl.DrawRectangleRec(paddle_rect, colors.base_colors.neonOrange)
+      rl.DrawCircleV(ball_pos, BALL_RADIUS, colors.base_colors.royalBlue)
       
       for x in 0..<NUM_BLOCKS_X {
         for y in 0..<NUM_BLOCK_Y {
@@ -269,14 +273,13 @@ main :: proc() {
           bottom_left := rl.Vector2 { block_rect.x, block_rect.y + block_rect.height}
           bottom_right := rl.Vector2 { block_rect.x + block_rect.width, block_rect.y + block_rect.height}
 
-          rl.DrawLineEx(top_left, top_right, 1.0, colors.colors.white)       //--- Top
-          rl.DrawLineEx(top_left,bottom_left, 1.0, colors.colors.white)      //--- Left 
-          rl.DrawLineEx(bottom_left, bottom_right, 1.0, colors.colors.white) //--- Bottom 
-          rl.DrawLineEx(bottom_right, top_right, 1.0, colors.colors.white)   //--- Right
+          rl.DrawLineEx(top_left, top_right, 1.0, colors.base_colors.white)       //--- Top
+          rl.DrawLineEx(top_left,bottom_left, 1.0, colors.base_colors.white)      //--- Left 
+          rl.DrawLineEx(bottom_left, bottom_right, 1.0, colors.base_colors.white) //--- Bottom 
+          rl.DrawLineEx(bottom_right, top_right, 1.0, colors.base_colors.white)   //--- Right
           
 
-
-          rl.DrawRectangleRec(block_rect, row_colors[y])
+          rl.DrawRectangleRec(block_rect,colors.block_colors[row_colors[y]])
         }
       }
 
