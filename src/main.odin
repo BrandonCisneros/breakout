@@ -282,6 +282,9 @@ main :: proc() {
           rl.DrawRectangleRec(block_rect,colors.block_colors[row_colors[y]])
         }
       }
+      
+      score_text := fmt.ctprint(score)
+      rl.DrawText(score_text, 290, 310, 20, colors.base_colors.neonOrange)
 
       rl.EndMode2D()
     rl.EndDrawing()
