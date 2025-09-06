@@ -42,6 +42,7 @@ ball_pos: rl.Vector2
 ball_dir: rl.Vector2
 started: bool
 score: int
+game_over: bool
 
 telemetryToggle: bool = true
 
@@ -49,7 +50,8 @@ restart :: proc() {
   paddle_pos_x = (SCREEN_SIZE/2) - (PADDLE_WIDTH/2)
   ball_pos = { (SCREEN_SIZE/2), BALL_START_Y }
   started = false
-  score = 0 
+  score = 0
+  game_over = false
 
   for x in 0..<NUM_BLOCKS_X {
     for y in 0..<NUM_BLOCK_Y {
@@ -79,7 +81,9 @@ block_exists :: proc(x,y: int) -> bool {
 
   return blocks[x][y]
 }
-
+//
+//---------- START OF GAME ----------//
+//
 main :: proc() {
 
   //--- Initialization
@@ -91,7 +95,19 @@ main :: proc() {
 
   rl.InitWindow(initScreenWidth,initScreenHeight,"BREAKOUT!")
   defer rl.CloseWindow()
+  rl.InitAudioDevice()
+  defer rl.CloseAudioDevice()
   rl.SetTargetFPS(fps)
+
+  //--- Load textures 
+  texture_ball    := rl.LoadTexture("../assets/ball.png")
+  texture_paddle  := rl.LoadTexture("../assets/paddle.png")
+
+  //--- Load audio
+  sound_block_hit   := rl.LoadSound("../assets/hit_block.wav")
+  sound_paddle_hit  := rl.LoadSound("../assets/hit_paddle.wav")
+  sound_game_over   := rl.LoadSound("../assets/game_over.wav")
+
 
   restart()
 
@@ -117,7 +133,11 @@ main :: proc() {
         ball_dir = la.normalize0(ball_to_paddle)
         started = true
       }
-    } else {
+    } else if game_over == true {
+        if rl.IsKeyPressed(.SPACE){
+          restart()
+        }
+    }else {
       dt = rl.GetFrameTime()
     }
 
@@ -144,8 +164,8 @@ main :: proc() {
     }
 
     //--- Restart after collision with bottom
-    if ball_pos.y > SCREEN_SIZE + BALL_RADIUS * 6 {
-      restart()
+    if !game_over && ball_pos.y > SCREEN_SIZE + BALL_RADIUS * 6 {
+      game_over = true
     }
 
 
@@ -165,6 +185,7 @@ main :: proc() {
    
     if rl.CheckCollisionCircleRec(ball_pos, BALL_RADIUS, paddle_rect) {
       collision_normal: rl.Vector2
+      rl.PlaySound(sound_paddle_hit)
       
       if previous_ball_pos.y < paddle_rect.y + paddle_rect.height {
         collision_normal += {0,-1}
@@ -229,6 +250,7 @@ main :: proc() {
 
           //--- Destroy block
           blocks[x][y] = false
+          rl.PlaySound(sound_block_hit) 
           row_color := row_colors[y]
           score += colors.block_score[row_color]
           break block_x_loop
@@ -249,8 +271,13 @@ main :: proc() {
 
      
 
-      rl.DrawRectangleRec(paddle_rect, colors.base_colors.neonOrange)
-      rl.DrawCircleV(ball_pos, BALL_RADIUS, colors.base_colors.royalBlue)
+      //--- Draw paddle
+      rl.DrawTextureV(texture_paddle, {paddle_pos_x, PADDLE_POS_Y}, colors.base_colors.neonOrange)
+      //rl.DrawRectangleRec(paddle_rect, colors.base_colors.neonOrange)
+
+      //--- Draw ball
+      rl.DrawTextureV(texture_ball, ball_pos - {BALL_RADIUS, BALL_RADIUS}, colors.base_colors.royalBlue)
+      //rl.DrawCircleV(ball_pos, BALL_RADIUS, colors.base_colors.royalBlue)
       
       for x in 0..<NUM_BLOCKS_X {
         for y in 0..<NUM_BLOCK_Y {
@@ -286,8 +313,25 @@ main :: proc() {
       score_text := fmt.ctprint(score)
       rl.DrawText(score_text, 290, 310, 20, colors.base_colors.neonOrange)
 
+      
+      if !started {
+        start_text := fmt.ctprint("Start: SPACE")
+        start_text_width := rl.MeasureText(start_text,15)
+        rl.DrawText(start_text, SCREEN_SIZE/2 - start_text_width/2, BALL_START_Y - 30, 15, colors.base_colors.royalBlue)
+      }
+
+      if game_over {
+        rl.PlaySound(sound_game_over)
+        game_over_text := fmt.ctprintf("Score: %v | Reset: SPACE", score)
+        game_over_text_width := rl.MeasureText(game_over_text,15)
+        rl.DrawText(game_over_text, SCREEN_SIZE/2 - game_over_text_width/2, BALL_START_Y - 30, 15, colors.base_colors.royalBlue)
+
+      }
+
       rl.EndMode2D()
     rl.EndDrawing()
+
+    free_all(context.temp_allocator)
   }
   
 }
