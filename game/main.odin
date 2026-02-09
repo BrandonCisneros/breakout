@@ -1,8 +1,6 @@
-package main
+package game
 
 import "core:sys/windows"
-import "colors"
-import "telemetry"
 import "core:fmt"
 import "core:math"
 import la "core:math/linalg"
@@ -24,7 +22,7 @@ BLOCK_HEIGHT  :: 10
 
 
 //--- Global Mutables
-row_colors := [NUM_BLOCK_Y]colors.BLOCK_COLORS {
+row_colors := [NUM_BLOCK_Y]BLOCK_COLORS {
   .block_red,
   .block_red,
   .block_green,
@@ -81,23 +79,10 @@ block_exists :: proc(x,y: int) -> bool {
 
   return blocks[x][y]
 }
-//
-//---------- START OF GAME ----------//
-//
+
 main :: proc() {
 
-  //--- Initialization
-  rl.SetConfigFlags({.VSYNC_HINT})
-  initScreenWidth: i32  = 1000
-  initScreenHeight: i32 = 1000
-  fps: i32 = 500
-
-
-  rl.InitWindow(initScreenWidth,initScreenHeight,"BREAKOUT!")
-  defer rl.CloseWindow()
-  rl.InitAudioDevice()
-  defer rl.CloseAudioDevice()
-  rl.SetTargetFPS(fps)
+  init_game()
 
   //--- Load textures 
   texture_ball    := rl.LoadTexture("../assets/ball.png")
@@ -115,7 +100,7 @@ main :: proc() {
   for !rl.WindowShouldClose() {
     //--- Telemetry
     if telemetryToggle {
-      telemetry.telemetry()
+      telemetry()
     }
 
     dt: f32
@@ -252,7 +237,7 @@ main :: proc() {
           blocks[x][y] = false
           rl.PlaySound(sound_block_hit) 
           row_color := row_colors[y]
-          score += colors.block_score[row_color]
+          score += block_score[row_color]
           break block_x_loop
 
         }
@@ -261,7 +246,7 @@ main :: proc() {
 
     //--- Drawing
     rl.BeginDrawing()
-      rl.ClearBackground(colors.base_colors.white)
+      rl.ClearBackground(base_colors.white)
 
       camera := rl.Camera2D{
         zoom = f32(rl.GetScreenHeight()/SCREEN_SIZE)
@@ -272,11 +257,11 @@ main :: proc() {
      
 
       //--- Draw paddle
-      rl.DrawTextureV(texture_paddle, {paddle_pos_x, PADDLE_POS_Y}, colors.base_colors.neonOrange)
+      rl.DrawTextureV(texture_paddle, {paddle_pos_x, PADDLE_POS_Y}, base_colors.neonOrange)
       //rl.DrawRectangleRec(paddle_rect, colors.base_colors.neonOrange)
 
       //--- Draw ball
-      rl.DrawTextureV(texture_ball, ball_pos - {BALL_RADIUS, BALL_RADIUS}, colors.base_colors.royalBlue)
+      rl.DrawTextureV(texture_ball, ball_pos - {BALL_RADIUS, BALL_RADIUS}, base_colors.royalBlue)
       //rl.DrawCircleV(ball_pos, BALL_RADIUS, colors.base_colors.royalBlue)
       
       for x in 0..<NUM_BLOCKS_X {
@@ -300,31 +285,31 @@ main :: proc() {
           bottom_left := rl.Vector2 { block_rect.x, block_rect.y + block_rect.height}
           bottom_right := rl.Vector2 { block_rect.x + block_rect.width, block_rect.y + block_rect.height}
 
-          rl.DrawLineEx(top_left, top_right, 1.0, colors.base_colors.white)       //--- Top
-          rl.DrawLineEx(top_left,bottom_left, 1.0, colors.base_colors.white)      //--- Left 
-          rl.DrawLineEx(bottom_left, bottom_right, 1.0, colors.base_colors.white) //--- Bottom 
-          rl.DrawLineEx(bottom_right, top_right, 1.0, colors.base_colors.white)   //--- Right
+          rl.DrawLineEx(top_left, top_right, 1.0, base_colors.white)       //--- Top
+          rl.DrawLineEx(top_left,bottom_left, 1.0, base_colors.white)      //--- Left 
+          rl.DrawLineEx(bottom_left, bottom_right, 1.0, base_colors.white) //--- Bottom 
+          rl.DrawLineEx(bottom_right, top_right, 1.0, base_colors.white)   //--- Right
           
 
-          rl.DrawRectangleRec(block_rect,colors.block_colors[row_colors[y]])
+          rl.DrawRectangleRec(block_rect,block_colors[row_colors[y]])
         }
       }
       
       score_text := fmt.ctprint(score)
-      rl.DrawText(score_text, 290, 310, 20, colors.base_colors.neonOrange)
+      rl.DrawText(score_text, 290, 310, 20, base_colors.neonOrange)
 
       
       if !started {
         start_text := fmt.ctprint("Start: SPACE")
         start_text_width := rl.MeasureText(start_text,15)
-        rl.DrawText(start_text, SCREEN_SIZE/2 - start_text_width/2, BALL_START_Y - 30, 15, colors.base_colors.royalBlue)
+        rl.DrawText(start_text, SCREEN_SIZE/2 - start_text_width/2, BALL_START_Y - 30, 15, base_colors.royalBlue)
       }
 
       if game_over {
         rl.PlaySound(sound_game_over)
         game_over_text := fmt.ctprintf("Score: %v | Reset: SPACE", score)
         game_over_text_width := rl.MeasureText(game_over_text,15)
-        rl.DrawText(game_over_text, SCREEN_SIZE/2 - game_over_text_width/2, BALL_START_Y - 30, 15, colors.base_colors.royalBlue)
+        rl.DrawText(game_over_text, SCREEN_SIZE/2 - game_over_text_width/2, BALL_START_Y - 30, 15, base_colors.royalBlue)
 
       }
 

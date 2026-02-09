@@ -1,6 +1,5 @@
-package telemetry
+package game
 
-import "../colors"
 import "core:fmt"
 import rl "vendor:raylib"
 
@@ -9,7 +8,7 @@ telemetry :: proc () {
   monitor: i32 = rl.GetCurrentMonitor()
 
   rl.DrawFPS((rl.GetScreenWidth()/100),(rl.GetScreenHeight()/100))
-  rl.DrawText("Testing", rl.GetScreenWidth()/100, rl.GetScreenHeight()/30,20,colors.base_colors.royalBlue)
+  rl.DrawText("Testing", rl.GetScreenWidth()/100, rl.GetScreenHeight()/30,20,base_colors.royalBlue)
   
   if rl.IsKeyDown(rl.KeyboardKey(65)) || rl.IsKeyDown(rl.KeyboardKey(68)) {
     fmt.printfln(
