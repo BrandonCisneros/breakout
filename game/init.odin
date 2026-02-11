@@ -17,8 +17,6 @@ init_game :: proc() {
 
 
   rl.InitWindow(initScreenWidth,initScreenHeight,"BREAKOUT!")
-  defer rl.CloseWindow()
   rl.InitAudioDevice()
-  defer rl.CloseAudioDevice()
   rl.SetTargetFPS(fps)
 }

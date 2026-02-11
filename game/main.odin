@@ -83,15 +83,17 @@ block_exists :: proc(x,y: int) -> bool {
 main :: proc() {
 
   init_game()
+  defer rl.CloseWindow()
+  defer rl.CloseAudioDevice()
 
   //--- Load textures 
-  texture_ball    := rl.LoadTexture("../assets/ball.png")
-  texture_paddle  := rl.LoadTexture("../assets/paddle.png")
+  texture_ball    := rl.LoadTexture("assets/ball.png")
+  texture_paddle  := rl.LoadTexture("assets/paddle.png")
 
   //--- Load audio
-  sound_block_hit   := rl.LoadSound("../assets/hit_block.wav")
-  sound_paddle_hit  := rl.LoadSound("../assets/hit_paddle.wav")
-  sound_game_over   := rl.LoadSound("../assets/game_over.wav")
+  sound_block_hit   := rl.LoadSound("assets/hit_block.wav")
+  sound_paddle_hit  := rl.LoadSound("assets/hit_paddle.wav")
+  sound_game_over   := rl.LoadSound("assets/game_over.wav")
 
 
   restart()
