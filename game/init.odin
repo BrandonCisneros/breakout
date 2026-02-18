@@ -6,7 +6,7 @@ init_game :: proc() {
   
   rl.SetConfigFlags(
     {
-        //.VSYNC_HINT,
+        .VSYNC_HINT,
         .WINDOW_RESIZABLE,
         .WINDOW_MAXIMIZED,
         .WINDOW_HIGHDPI,
